@@ -56,15 +56,28 @@ var Asteroids = (function() {
 
     this.degrees = -90;
 
-    this.xPos = xPos;
-    this.yPos = yPos;
+    this.calculateCorner = function(type, degrees, tip) {
+      if (type=="x") {
+        return (Math.cos(((that.degrees + degrees) / 180) * Math.PI) * 30) + tip;
+      } else {
+        return (Math.sin(((that.degrees + degrees) / 180) * Math.PI) * 30) + tip;
+      }
+    }
 
-    this.rightCornerX = (Math.cos(((that.degrees + 160) / 180) * Math.PI) * 30) + that.xPos;
-    this.rightCornerY = (Math.sin(((that.degrees + 160) / 180) * Math.PI) * 30) + that.yPos;
-
-    this.leftCornerX = (Math.cos(((that.degrees + 200) / 180) * Math.PI) * 30) + that.xPos;
-    this.leftCornerY = (Math.sin(((that.degrees + 200) / 180) * Math.PI) * 30) + that.yPos;
-
+    this.corners = {
+      tip: {
+        x: xPos,
+        y: yPos
+      },
+      right: {
+        x: that.calculateCorner('x', 160, xPos),
+        y: that.calculateCorner('y', 160, yPos)
+      },
+      left: {
+        x: that.calculateCorner('x', 200, xPos),
+        y: that.calculateCorner('y', 200, yPos)
+      }
+    };
 
     this.xDelta = 0;
     this.yDelta = 0;
@@ -75,15 +88,18 @@ var Asteroids = (function() {
     this.draw = function(context) {
       context.fillStyle = "rgb(42, 128, 196)";
       context.beginPath();
-      context.moveTo(that.xPos, that.yPos);
-      context.lineTo(that.rightCornerX, that.rightCornerY);
-      context.lineTo(that.leftCornerX, that.leftCornerY);
-      context.lineTo(that.xPos, that.yPos);
+      context.moveTo(that.corners.tip.x, that.corners.tip.y);
+      context.lineTo(that.corners.right.x, that.corners.right.y);
+      context.lineTo(that.corners.left.x, that.corners.left.y);
+      context.lineTo(that.corners.tip.x, that.corners.tip.y);
       context.fill();
 
-      context.fillStyle = "rgba(255, 0, 255," + ((Math.abs(that.xDelta) + Math.abs(that.yDelta)) / 4) + ")";
+      context.fillStyle = "rgba(255, 0, 255," +
+                          ((Math.abs(that.xDelta) +
+                            Math.abs(that.yDelta)) / 4)
+                          + ")";
       context.beginPath();
-      context.arc(that.xPos, that.yPos, 30,
+      context.arc(that.corners.tip.x, that.corners.tip.y, 30,
                 ((that.degrees + 160)/180) * Math.PI,
                 ((that.degrees + 200)/180) * Math.PI, false);
       context.fill();
@@ -91,19 +107,25 @@ var Asteroids = (function() {
     };
 
     this.update = function(){
-      that.xPos = (that.xPos + that.xDelta + Game.xSize) % Game.xSize;
-      that.yPos = (that.yPos + that.yDelta + Game.ySize) % Game.ySize;
-      that.rightCornerX = (Math.cos(((that.degrees + 160) / 180) * Math.PI) * 30) + that.xPos;
-      that.rightCornerY = (Math.sin(((that.degrees + 160) / 180) * Math.PI) * 30) + that.yPos;
-      that.leftCornerX = (Math.cos(((that.degrees + 200) / 180) * Math.PI) * 30) + that.xPos;
-      that.leftCornerY = (Math.sin(((that.degrees + 200) / 180) * Math.PI) * 30) + that.yPos;
+      that.corners.tip.x = (that.corners.tip.x + that.xDelta + Game.xSize) %
+                                                               Game.xSize;
+      that.corners.tip.y = (that.corners.tip.y + that.yDelta + Game.ySize) %
+                                                               Game.ySize;
+
+      that.corners.right.x = that.calculateCorner('x', 160, that.corners.tip.x);
+      that.corners.right.y = that.calculateCorner('y', 160, that.corners.tip.y);
+
+      that.corners.left.x = that.calculateCorner('x', 200, that.corners.tip.x);
+      that.corners.left.y = that.calculateCorner('y', 200, that.corners.tip.y);
     };
 
     this.changeSpeed = function(speed) {
-      if(((that.xAccel > 0) && (that.xDelta < 4)) || ((that.xAccel < 0) && (that.xDelta > -4))) {
+      if(((that.xAccel > 0) && (that.xDelta < 4)) ||
+         ((that.xAccel < 0) && (that.xDelta > -4))) {
         that.xDelta += (that.xAccel * speed);
       }
-      if(((that.yAccel > 0) && (that.yDelta < 4)) || ((that.yAccel < 0) && (that.yDelta > -4))) {
+      if(((that.yAccel > 0) && (that.yDelta < 4)) ||
+         ((that.yAccel < 0) && (that.yDelta > -4))) {
         that.yDelta += (that.yAccel * speed);
       }
     };
