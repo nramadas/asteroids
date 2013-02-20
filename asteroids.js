@@ -164,11 +164,22 @@ var Asteroids = (function() {
 })();
 
 var loader = function() {
+  var canvas = document.getElementById('canvas');
+  
   Asteroids.Game.xSize = document.body.clientWidth;
   Asteroids.Game.ySize = document.body.clientHeight;
-  var canvas = document.getElementById('canvas');
+  
   canvas.setAttribute('width', Asteroids.Game.xSize);
   canvas.setAttribute('height', Asteroids.Game.ySize);
+
+  window.onresize = function () {
+    Asteroids.Game.xSize = document.body.clientWidth;
+    Asteroids.Game.ySize = document.body.clientHeight;
+
+    canvas.setAttribute('width', Asteroids.Game.xSize);
+    canvas.setAttribute('height', Asteroids.Game.ySize);
+  };
+  
   var context = canvas.getContext('2d');
   var game = new Asteroids.Game(context);
 
