@@ -59,8 +59,9 @@ var Asteroids = (function() {
     this.degrees = -90;
     this.topPoint = 10;
     this.xDelta = 0;
-    this.yDelta = -1;
-    this.speed = 0;
+    this.yDelta = 0;
+    this.xAccel = 0;
+    this.yAccel = -1;
 
     this.draw = function(context) {
       context.fillStyle = "rgb(42, 128, 196)";
@@ -75,7 +76,7 @@ var Asteroids = (function() {
       context.lineTo(that.xPos, that.yPos);
       context.fill();
 
-      context.fillStyle = "rgba(255, 0, 255," + Math.abs(that.speed / 4) + ")";
+      context.fillStyle = "rgba(255, 0, 255," + ((Math.abs(that.xDelta) + Math.abs(that.yDelta)) / 4) + ")";
       context.beginPath();
       context.arc(that.xPos, that.yPos, 30,
                 ((that.degrees + 160)/180) * Math.PI,
@@ -85,14 +86,16 @@ var Asteroids = (function() {
     };
 
     this.update = function(){
-      that.xPos = (that.xPos + (that.xDelta * that.speed) + Game.xSize) % Game.xSize;
-      that.yPos = (that.yPos + (that.yDelta * that.speed) + Game.ySize) % Game.ySize;
+      that.xPos = (that.xPos + (that.xDelta) + Game.xSize) % Game.xSize;
+      that.yPos = (that.yPos + (that.yDelta) + Game.ySize) % Game.ySize;
     };
 
     this.changeSpeed = function(speed) {
-      if(((speed > 0) && (that.speed < 4)) || ((speed < 0) && (that.speed > -4))) {
-        that.speed += speed;
-        console.log(that.speed);
+      if(((that.xAccel > 0) && (that.xDelta < 4)) || ((that.xAccel < 0) && (that.xDelta > -4))) {
+        that.xDelta += (that.xAccel * speed);
+      }
+      if(((that.yAccel > 0) && (that.yDelta < 4)) || ((that.yAccel < 0) && (that.yDelta > -4))) {
+        that.yDelta += (that.yAccel * speed);
       }
     };
 
@@ -102,8 +105,9 @@ var Asteroids = (function() {
       } else {
         that.degrees = (that.degrees - 3 + 360) % 360;
       }
-      that.xDelta = Math.cos((that.degrees / 180) * Math.PI);
-      that.yDelta = Math.sin((that.degrees / 180) * Math.PI);
+
+      that.xAccel = Math.cos((that.degrees / 180) * Math.PI);
+      that.yAccel = Math.sin((that.degrees / 180) * Math.PI);
     };
   }
 
