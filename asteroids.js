@@ -18,10 +18,10 @@ var Asteroids = (function() {
     this.start = function() {
       var t = setInterval(function() {
         if(key.isPressed(38)) {
-          that.ship.changeSpeed(0.1);
+          that.ship.changeSpeed(0.05);
         }
         if(key.isPressed(40)) {
-          that.ship.changeSpeed(-0.1);
+          that.ship.changeSpeed(-0.05);
         }
         if(key.isPressed(37)) {
           that.ship.changeDirection(0);
