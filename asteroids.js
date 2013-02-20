@@ -18,10 +18,10 @@ var Asteroids = (function() {
     this.start = function() {
       var t = setInterval(function() {
         if(key.isPressed(38)) {
-          that.ship.changeSpeed(0.05);
+          that.ship.changeSpeed(0.01);
         }
         if(key.isPressed(40)) {
-          that.ship.changeSpeed(-0.05);
+          that.ship.changeSpeed(-0.01);
         }
         if(key.isPressed(37)) {
           that.ship.changeDirection(0);
@@ -29,13 +29,18 @@ var Asteroids = (function() {
         if(key.isPressed(39)) {
           that.ship.changeDirection(1);
         }
+
         for (var i = 0; i < that.asteroids.length; i++) {
           that.asteroids[i].update();
         }
 
         that.ship.update();
         that.draw();
-      }, 10);
+        if(that.hasCollided()) {
+          alert("You lose!");
+          clearInterval(t);
+        }
+      }, 3);
 
     };
 
@@ -46,10 +51,36 @@ var Asteroids = (function() {
       }
       that.ship.draw(that.context);
     };
+
+    this.detectCollision = function(shipCorner) {
+      for (var i = 0; i < that.asteroids.length; i++) {
+        var distance = Game.calculateDistance(shipCorner,
+                       that.asteroids[i].position);
+
+        if (distance <= that.asteroids[i].radius) {
+          return true;
+        }
+      };
+
+      return false;
+    };
+
+    this.hasCollided = function() {
+      return (that.detectCollision(that.ship.corners.tip) ||
+              that.detectCollision(that.ship.corners.right) ||
+              that.detectCollision(that.ship.corners.left));
+    };
+
   }
 
   Game.xSize = 600;
   Game.ySize = 600;
+  Game.calculateDistance = function(start, end) {
+    var xDiff = Math.pow((start.x - end.x), 2);
+    var yDiff = Math.pow((start.y - end.y), 2);
+
+    return Math.sqrt(xDiff + yDiff);
+  };
 
   function Ship(xPos, yPos){
     var that = this;
@@ -96,7 +127,7 @@ var Asteroids = (function() {
 
       context.fillStyle = "rgba(255, 0, 255," +
                           ((Math.abs(that.xDelta) +
-                            Math.abs(that.yDelta)) / 4)
+                            Math.abs(that.yDelta)) / 2)
                           + ")";
       context.beginPath();
       context.arc(that.corners.tip.x, that.corners.tip.y, 30,
@@ -120,12 +151,12 @@ var Asteroids = (function() {
     };
 
     this.changeSpeed = function(speed) {
-      if(((that.xAccel > 0) && (that.xDelta < 4)) ||
-         ((that.xAccel < 0) && (that.xDelta > -4))) {
+      if(((that.xAccel > 0) && (that.xDelta < 2)) ||
+         ((that.xAccel < 0) && (that.xDelta > -2))) {
         that.xDelta += (that.xAccel * speed);
       }
-      if(((that.yAccel > 0) && (that.yDelta < 4)) ||
-         ((that.yAccel < 0) && (that.yDelta > -4))) {
+      if(((that.yAccel > 0) && (that.yDelta < 2)) ||
+         ((that.yAccel < 0) && (that.yDelta > -2))) {
         that.yDelta += (that.yAccel * speed);
       }
     };
@@ -146,8 +177,11 @@ var Asteroids = (function() {
   function Asteroid(xPos, yPos, xDelta, yDelta){
     var that = this;
 
-    this.xPos = xPos;
-    this.yPos = yPos;
+    this.position = {
+      x: xPos,
+      y: yPos
+    };
+
     this.xDelta = xDelta;
     this.yDelta = yDelta;
     this.radius = 30;
@@ -161,13 +195,16 @@ var Asteroids = (function() {
     this.draw = function(context) {
       context.fillStyle = that.fillStyle;
       context.beginPath();
-      context.arc(that.xPos, that.yPos, that.radius, 0, 2*Math.PI, true);
+      context.arc(that.position.x, that.position.y,
+                  that.radius, 0, 2*Math.PI, true);
       context.fill();
     };
 
     this.update = function(){
-      that.xPos = (that.xPos + that.xDelta + Game.xSize) % Game.xSize;
-      that.yPos = (that.yPos + that.yDelta + Game.ySize) % Game.ySize;
+      that.position.x = (that.position.x + that.xDelta + Game.xSize) %
+                                                         Game.xSize;
+      that.position.y = (that.position.y + that.yDelta + Game.ySize) %
+                                                         Game.ySize;
     };
   }
 
@@ -183,8 +220,8 @@ var Asteroids = (function() {
       yPos = Math.floor(Math.random() * Game.ySize);
     }
 
-    var xDelta = (Math.random() * 2) - 1;
-    var yDelta = (Math.random() * 2) - 1;
+    var xDelta = (Math.random() * 1) - 0.5;
+    var yDelta = (Math.random() * 1) - 0.5;
 
     return (new Asteroid(xPos, yPos, xDelta, yDelta));
   };
