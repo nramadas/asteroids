@@ -4,34 +4,34 @@ var Asteroids = (function() {
 
     this.context = context;
     this.ship = (function() {
-      return new Ship(400,400);
+      return new Ship((Game.xSize/2),(Game.ySize/2));
     })();
 
     this.asteroids = (function() {
       var as = [];
       for (var i = 0; i < 10; i++) {
-        as.push(Asteroid.randomAsteroid())
-      };
+        as.push(Asteroid.randomAsteroid());
+      }
       return as;
     })();
 
     this.start = function() {
       var t = setInterval(function() {
         if(key.isPressed(38)) {
-          that.ship.changeDirection(0, -.25);
+          that.ship.changeSpeed(0.1);
         }
         if(key.isPressed(40)) {
-          that.ship.changeDirection(0, .25);
+          that.ship.changeSpeed(-0.1);
         }
         if(key.isPressed(37)) {
-          that.ship.changeDirection(-.25, 0);
+          that.ship.changeDirection(0);
         }
         if(key.isPressed(39)) {
-          that.ship.changeDirection(.25, 0);
+          that.ship.changeDirection(1);
         }
         for (var i = 0; i < that.asteroids.length; i++) {
           that.asteroids[i].update();
-        };
+        }
 
         that.ship.update();
         that.draw();
@@ -40,41 +40,70 @@ var Asteroids = (function() {
     };
 
     this.draw = function() {
-      that.context.clearRect(0,0,800,800);
+      that.context.clearRect(0,0,Game.xSize,Game.ySize);
       for (var i = 0; i < that.asteroids.length; i++) {
         that.asteroids[i].draw(that.context);
-      };
+      }
       that.ship.draw(that.context);
     };
   }
+
+  Game.xSize = 600;
+  Game.ySize = 600;
 
   function Ship(xPos, yPos){
     var that = this;
 
     this.xPos = xPos;
     this.yPos = yPos;
+    this.degrees = -90;
+    this.topPoint = 10;
     this.xDelta = 0;
-    this.yDelta = 0;
+    this.yDelta = -1;
+    this.speed = 0;
 
     this.draw = function(context) {
       context.fillStyle = "rgb(42, 128, 196)";
       context.beginPath();
-      context.arc(that.xPos, that.yPos, 10, 0, 2*Math.PI, true);
+      context.moveTo(that.xPos, that.yPos);
+      rightCornerX = (Math.cos(((that.degrees + 160) / 180) * Math.PI) * 30) + that.xPos;
+      rightCornerY = (Math.sin(((that.degrees + 160) / 180) * Math.PI) * 30) + that.yPos;
+      leftCornerX = (Math.cos(((that.degrees + 200) / 180) * Math.PI) * 30) + that.xPos;
+      leftCornerY = (Math.sin(((that.degrees + 200) / 180) * Math.PI) * 30) + that.yPos;
+      context.lineTo(rightCornerX, rightCornerY);
+      context.lineTo(leftCornerX, leftCornerY);
+      context.lineTo(that.xPos, that.yPos);
       context.fill();
+
+      context.fillStyle = "rgba(255, 0, 255," + Math.abs(that.speed / 4) + ")";
+      context.beginPath();
+      context.arc(that.xPos, that.yPos, 30,
+                ((that.degrees + 160)/180) * Math.PI,
+                ((that.degrees + 200)/180) * Math.PI, false);
+      context.fill();
+
     };
 
     this.update = function(){
-      that.xPos = (that.xPos + that.xDelta + 800) % 800;
-      that.yPos = (that.yPos + that.yDelta + 800) % 800;
+      that.xPos = (that.xPos + (that.xDelta * that.speed) + Game.xSize) % Game.xSize;
+      that.yPos = (that.yPos + (that.yDelta * that.speed) + Game.ySize) % Game.ySize;
     };
 
-    this.changeDirection = function(x, y) {
-      if (((that.xDelta > -5) && (x < 0)) || ((that.xDelta < 5) && (x > 0))) {
-        that.xDelta += x;
+    this.changeSpeed = function(speed) {
+      if(((speed > 0) && (that.speed < 4)) || ((speed < 0) && (that.speed > -4))) {
+        that.speed += speed;
+        console.log(that.speed);
       }
-      if (((that.yDelta > -5) && (y < 0)) || ((that.yDelta < 5) && (y > 0))) {
-        that.yDelta += y;
+    };
+
+    this.changeDirection = function(direc) {
+      if(direc) {
+        that.degrees = (that.degrees + 3 + 360) % 360;
+      } else {
+        that.degrees = (that.degrees - 3 + 360) % 360;
       }
+      that.xDelta = Math.cos((that.degrees / 180) * Math.PI);
+      that.yDelta = Math.sin((that.degrees / 180) * Math.PI);
     };
   }
 
@@ -88,8 +117,9 @@ var Asteroids = (function() {
     this.radius = 30;
 
     this.fillStyle = (function() {
-      return "rgb(" + (Math.floor(Math.random() * 100) + 100) + "," +
-                      (Math.floor(Math.random() * 100) + 100) + ",0)";
+      return "rgba(" + (Math.floor(Math.random() * 150) + 50) + "," +
+                       (Math.floor(Math.random() * 150) + 50) + "," +
+                       (Math.floor(Math.random() * 150) + 50) + ",0.8)";
     })();
 
     this.draw = function(context) {
@@ -100,8 +130,8 @@ var Asteroids = (function() {
     };
 
     this.update = function(){
-      that.xPos = (that.xPos + that.xDelta + 800) % 800;
-      that.yPos = (that.yPos + that.yDelta + 800) % 800;
+      that.xPos = (that.xPos + that.xDelta + Game.xSize) % Game.xSize;
+      that.yPos = (that.yPos + that.yDelta + Game.ySize) % Game.ySize;
     };
   }
 
@@ -110,11 +140,11 @@ var Asteroids = (function() {
     var yPos = 0;
 
     if (Math.floor(Math.random() + 0.5)) {
-      xPos = Math.floor(Math.random() * 800);
-      yPos = 800;
+      xPos = Math.floor(Math.random() * Game.xSize);
+      yPos = Game.ySize;
     } else {
-      xPos = 800;
-      yPos = Math.floor(Math.random() * 800);
+      xPos = Game.xSize;
+      yPos = Math.floor(Math.random() * Game.ySize);
     }
 
     var xDelta = (Math.random() * 2) - 1;
@@ -130,7 +160,11 @@ var Asteroids = (function() {
 })();
 
 var loader = function() {
+  Asteroids.Game.xSize = document.body.clientWidth;
+  Asteroids.Game.ySize = document.body.clientHeight;
   var canvas = document.getElementById('canvas');
+  canvas.setAttribute('width', Asteroids.Game.xSize);
+  canvas.setAttribute('height', Asteroids.Game.ySize);
   var context = canvas.getContext('2d');
   var game = new Asteroids.Game(context);
 
