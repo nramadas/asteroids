@@ -3,6 +3,7 @@ var Asteroids = (function() {
     var that = this;
 
     this.context = context;
+    this.bulletSpacer = 0;
     this.ship = (function() {
       return new Ship((Game.xSize/2),(Game.ySize/2));
     })();
@@ -14,6 +15,8 @@ var Asteroids = (function() {
       }
       return as;
     })();
+
+    this.bullets = [];
 
     this.start = function() {
       var t = setInterval(function() {
@@ -29,16 +32,33 @@ var Asteroids = (function() {
         if(key.isPressed(39)) {
           that.ship.changeDirection(1);
         }
+        // Spacebar / Fire
+        if(key.isPressed(32)) {
+          if((that.bullets.length <= 5) && (that.bulletSpacer <= 0)){
+            that.bullets.push(new Bullet(that.ship.corners.tip.x,
+                                         that.ship.corners.tip.y,
+                                         (that.ship.xAccel * 3),
+                                         (that.ship.yAccel * 3)));
+            that.bulletSpacer = 32;
+          } else {
+            that.bulletSpacer--;
+          }
+        }
+
 
         for (var i = 0; i < that.asteroids.length; i++) {
           that.asteroids[i].update();
         }
 
+        for (var i = 0; i < that.bullets.length; i++) {
+          that.bullets[i].update();
+        };
+
         that.ship.update();
         that.draw();
         if(that.hasCollided()) {
-          alert("You lose!");
           clearInterval(t);
+          // alert("You lose!");
         }
       }, 3);
 
@@ -49,6 +69,9 @@ var Asteroids = (function() {
       for (var i = 0; i < that.asteroids.length; i++) {
         that.asteroids[i].draw(that.context);
       }
+      for (var i = 0; i < that.bullets.length; i++) {
+        that.bullets[i].draw(that.context);
+      };
       that.ship.draw(that.context);
     };
 
@@ -173,6 +196,38 @@ var Asteroids = (function() {
 
     };
   }
+
+
+  function Bullet(xPos, yPos, xDelta, yDelta){
+    var that = this;
+
+    this.position = {
+      x: xPos,
+      y: yPos
+    };
+
+    this.xDelta = xDelta;
+    this.yDelta = yDelta;
+    this.radius = 5;
+
+    this.fillStyle = "rgb(0,0,0)";
+
+    this.draw = function(context) {
+      context.fillStyle = that.fillStyle;
+      context.beginPath();
+      context.arc(that.position.x, that.position.y,
+                  that.radius, 0, 2*Math.PI, true);
+      context.fill();
+    };
+
+    this.update = function(){
+      that.position.x = (that.position.x + that.xDelta + Game.xSize) %
+                                                         Game.xSize;
+      that.position.y = (that.position.y + that.yDelta + Game.ySize) %
+                                                         Game.ySize;
+    };
+  }
+
 
   function Asteroid(xPos, yPos, xDelta, yDelta){
     var that = this;
