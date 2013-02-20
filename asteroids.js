@@ -320,6 +320,8 @@ var Asteroids = (function() {
 })();
 
 var loader = function() {
+  document.getElementById("gavel").play();
+
   var canvas = document.getElementById('canvas');
 
   Asteroids.Game.xSize = document.body.clientWidth;
@@ -341,7 +343,6 @@ var loader = function() {
 
   var s = setTimeout(function() {
     document.getElementById("startSplash").style.display = "none";
-    console.log("yo");
     game.start();
   },3000);
 };
