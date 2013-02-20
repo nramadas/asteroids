@@ -23,9 +23,6 @@ var Asteroids = (function() {
         if(key.isPressed(38)) {
           that.ship.changeSpeed(0.01);
         }
-        if(key.isPressed(40)) {
-          that.ship.changeSpeed(-0.01);
-        }
         if(key.isPressed(37)) {
           that.ship.changeDirection(0);
         }
@@ -34,7 +31,10 @@ var Asteroids = (function() {
         }
         // Spacebar / Fire
         if(key.isPressed(32)) {
-          if((that.bullets.length <= 5) && (that.bulletSpacer <= 0)){
+          if(that.bulletSpacer <= 0) {
+            if (that.bullets.length >= 10) {
+              that.bullets.shift();
+            }
             that.bullets.push(new Bullet(that.ship.corners.tip.x,
                                          that.ship.corners.tip.y,
                                          (that.ship.xAccel * 3),
@@ -44,7 +44,6 @@ var Asteroids = (function() {
             that.bulletSpacer--;
           }
         }
-
 
         for (var i = 0; i < that.asteroids.length; i++) {
           that.asteroids[i].update();
@@ -57,9 +56,42 @@ var Asteroids = (function() {
         that.ship.update();
         that.draw();
         if(that.hasCollided()) {
+          // LOSE CONDITION
           clearInterval(t);
-          // alert("You lose!");
+          document.getElementById("loseSplash").style.display = "block";
         }
+
+        if(that.asteroids.length == 0) {
+          // WIN CONDITION
+          clearInterval(t);
+          document.getElementById("winSplash").style.display = "block";
+        }
+
+        for (var i = 0; i < that.bullets.length; i++) {
+          for (var j = 0; j < that.asteroids.length; j++) {
+            var distance = Game.calculateDistance(that.bullets[i].position,
+                                                  that.asteroids[j].position);
+
+            if (distance <= that.asteroids[j].radius) {
+              that.bullets.splice(i, 1);
+              var papaAsteroid = that.asteroids.splice(j, 1)[0];
+
+              if((papaAsteroid.radius /2) > 5) {
+                that.asteroids.push(new Asteroid(papaAsteroid.position.x,
+                                                 papaAsteroid.position.y,
+                                                 -papaAsteroid.xDelta,
+                                                 -papaAsteroid.yDelta,
+                                                 papaAsteroid.radius/2))
+                that.asteroids.push(new Asteroid(papaAsteroid.position.x,
+                                                 papaAsteroid.position.y,
+                                                 papaAsteroid.yDelta,
+                                                 papaAsteroid.xDelta,
+                                                 papaAsteroid.radius/2))
+              }
+              break;
+            }
+          };
+        };
       }, 3);
 
     };
@@ -208,7 +240,7 @@ var Asteroids = (function() {
 
     this.xDelta = xDelta;
     this.yDelta = yDelta;
-    this.radius = 5;
+    this.radius = 3;
 
     this.fillStyle = "rgb(0,0,0)";
 
@@ -229,7 +261,7 @@ var Asteroids = (function() {
   }
 
 
-  function Asteroid(xPos, yPos, xDelta, yDelta){
+  function Asteroid(xPos, yPos, xDelta, yDelta, radius){
     var that = this;
 
     this.position = {
@@ -239,7 +271,7 @@ var Asteroids = (function() {
 
     this.xDelta = xDelta;
     this.yDelta = yDelta;
-    this.radius = 30;
+    this.radius = (radius) ? radius : 30;
 
     this.fillStyle = (function() {
       return "rgba(" + (Math.floor(Math.random() * 150) + 50) + "," +
@@ -307,5 +339,13 @@ var loader = function() {
   var context = canvas.getContext('2d');
   var game = new Asteroids.Game(context);
 
-  game.start();
+  var s = setTimeout(function() {
+    document.getElementById("startSplash").style.display = "none";
+    console.log("yo");
+    game.start();
+  },3000);
 };
+
+
+
+
