@@ -182,8 +182,8 @@ var Asteroids = (function() {
 
       context.fillStyle = "rgba(255, 0, 255," +
                           ((Math.abs(that.xDelta) +
-                            Math.abs(that.yDelta)) / 2)
-                          + ")";
+                            Math.abs(that.yDelta)) / 2) +
+                          ")";
       context.beginPath();
       context.arc(that.corners.tip.x, that.corners.tip.y, 30,
                 ((that.degrees + 160)/180) * Math.PI,
@@ -253,10 +253,8 @@ var Asteroids = (function() {
     };
 
     this.update = function(){
-      that.position.x = (that.position.x + that.xDelta + Game.xSize) %
-                                                         Game.xSize;
-      that.position.y = (that.position.y + that.yDelta + Game.ySize) %
-                                                         Game.ySize;
+      that.position.x = (that.position.x + that.xDelta);
+      that.position.y = (that.position.y + that.yDelta);
     };
   }
 
